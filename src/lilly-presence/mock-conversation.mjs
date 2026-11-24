@@ -50,7 +50,8 @@ export function createMockConversation({ presenceConfig, readContext, provider }
     return active === turn ? state : null;
   }
   const cancelled = turn => failure(turn.reason ?? "stale_turn");
-  async function run(prompt) {
+  // Optional observation is trusted harness data, never an authority grant.
+  async function run(prompt, observation = null) {
     if (typeof prompt !== "string" || !prompt.trim() || prompt.length > 8192) return failure("invalid_prompt");
     const state = synchronize();
     if (active) return failure("turn_busy");
@@ -60,7 +61,7 @@ export function createMockConversation({ presenceConfig, readContext, provider }
     active = turn;
     let stream, terminal = false, count = 0;
     try {
-      stream = provider.open(turn.abort.signal);
+      stream = provider.open(turn.abort.signal, Object.freeze({ prompt, observation }));
       while (true) {
         const chunk = await stream.next();
         if (!live(turn)) return cancelled(turn);
