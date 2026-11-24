@@ -11,16 +11,16 @@ const end = event('end');
 const script = (value, extra = {}) => ({ events: [event('text', value), end], ...extra });
 const flush = () => new Promise(resolve => setImmediate(resolve));
 function setup(scripts = [script('fixture response')]) {
-  let time = 100, tabs = [tab], documentId = 'doc-a', text = 'copper key', hook = null, queryHook = null;
+  let time = 100, tabs = [tab], documentId = 'doc-a', text = 'copper key', hook = null, queryHook = null, clockHook = null;
   const calls = [], provider = createMockProvider(scripts);
   const api = { tabs: { async query() { if (queryHook) await queryHook(); return tabs; } }, scripting: { async executeScript(req) {
     calls.push(req); if (hook) await hook(req);
     if (req.target.documentIds && !req.target.documentIds.includes(documentId)) throw Error('document unavailable');
     return [{ frameId: 0, documentId, result: req.func === identifyFixture ? true : text }];
   } } };
-  const fixture = createIntegratedFixture({ api, browserId: 'b', workerId: 'w', provider, now: () => time });
+  const fixture = createIntegratedFixture({ api, browserId: 'b', workerId: 'w', provider, now: () => { if (clockHook) clockHook(); return time; } });
   return { fixture, provider, calls, time: v => { time = v; }, tabs: v => { tabs = v; }, doc: v => { documentId = v; },
-    text: v => { text = v; }, hook: v => { hook = v; }, queryHook: v => { queryHook = v; } };
+    text: v => { text = v; }, hook: v => { hook = v; }, queryHook: v => { queryHook = v; }, clockHook: v => { clockHook = v; } };
 }
 const reads = f => f.calls.filter(c => c.func === readFixture);
 async function join(f) { assert.equal((await f.fixture.prepare()).ok, true); const r = await f.fixture.confirm(); assert.equal(r.ok, true, r.reason); return r.observation; }
@@ -96,4 +96,10 @@ test('mock write proposal cannot escalate or touch the browser', async () => {
 test('mock read proposal yields synthetic receipt only, not a second observation', async () => {
   const raw=JSON.stringify({id:'op',name:'read_fixture',target:'fixture-a',text:''});
   const f=setup([{events:[event('tool',raw),end]}]);await join(f);const r=await f.fixture.run('read');assert.equal(r.receipt.result,'SYNTHETIC_DISPATCH_ACCEPTED_NO_AUTHORITY');assert.equal(reads(f).length,1);
+});
+test('revocation between final verification resolution and caller continuation denies release', async () => {
+  const f=setup([script('old',{pauseAt:0})]);await join(f);const running=f.fixture.run('x');await flush();
+  let queries=0;
+  f.queryHook(()=>{if(++queries===2)f.clockHook(()=>{f.clockHook(null);queueMicrotask(()=>f.fixture.revoke());});});
+  f.provider.release(0);const r=await running;assert.equal(r.ok,false);assert.equal(f.fixture.snapshot().stage,'absent');
 });
