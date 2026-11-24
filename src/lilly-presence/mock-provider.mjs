@@ -3,18 +3,20 @@ const providers = new WeakSet();
 export const isMockProvider = value => providers.has(value);
 export function createMockProvider(scripts) {
   if (!Array.isArray(scripts) || scripts.length > 16) throw new TypeError("invalid fixtures");
-  const entries = scripts.map(({ events, pauseAt = -1, ignoreAbort = false }) => {
+  const entries = scripts.map(({ events, pauseAt = -1, ignoreAbort = false, expectedRequest = undefined }) => {
     if (!Array.isArray(events) || events.length > 128 || !events.every(e => typeof e === "string" && e.length <= 16384) ||
         !Number.isInteger(pauseAt) || pauseAt < -1 || pauseAt >= events.length || typeof ignoreAbort !== "boolean") throw new TypeError("invalid script");
     let release;
     const gate = new Promise(resolve => { release = resolve; });
-    return { events: [...events], pauseAt, ignoreAbort, gate, release };
+    return { events: [...events], pauseAt, ignoreAbort, gate, release,
+      expected: expectedRequest === undefined ? undefined : JSON.stringify(expectedRequest) };
   });
   let opened = 0, aborted = 0, emitted = 0;
   const provider = Object.freeze({
-    open(signal) {
+    open(signal, request) {
       const entry = entries[opened++];
       if (!entry) throw new Error("fixture exhausted");
+      if (entry.expected !== undefined && JSON.stringify(request) !== entry.expected) throw new Error("fixture request mismatch");
       let cursor = 0, closed = false;
       const onAbort = () => { aborted++; if (!entry.ignoreAbort) entry.release(); };
       signal.addEventListener("abort", onAbort, { once: true });
