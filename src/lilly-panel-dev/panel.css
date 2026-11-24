@@ -1,0 +1,12 @@
+* { box-sizing: border-box; }
+:root { color-scheme: dark; font: 14px/1.55 system-ui, sans-serif; background: #211e1a; color: #f2eadf; }
+body { margin: 0; } main { max-width: 38rem; margin: auto; padding: 24px 18px; }
+header { padding-bottom: 12px; border-bottom: 1px solid #584c3e; }
+h1 { font: 400 44px/1.1 Georgia, serif; margin: 8px 0; } h2 { font-size: 17px; margin: 0 0 12px; }
+p { margin: 0 0 10px; } .eyebrow { color: #d5b080; font-size: 11px; letter-spacing: .14em; }
+section { margin: 18px 0; padding: 15px; border: 1px solid #76634e; border-radius: 12px; background: #2c2721; }
+.controls { display: flex; flex-wrap: wrap; gap: 7px; } button { padding: 8px 11px; border: 1px solid #9e886a; border-radius: 6px; background: #453a2e; color: #f2eadf; font: inherit; cursor: pointer; }
+button:disabled { opacity: .45; cursor: default; } button:focus-visible, textarea:focus-visible { outline: 2px solid #d5b080; outline-offset: 2px; }
+textarea { width: 100%; margin: 6px 0; padding: 9px; font: inherit; background: #211e1a; border: 1px solid #76634e; border-radius: 6px; }
+.muted, footer { font-size: 12px; color: #d1c5b6; } .provenance { font: 11px/1.5 ui-monospace, monospace; color: #d1c5b6; }
+.observed, .reply, .provenance { white-space: pre-wrap; overflow-wrap: anywhere; } .reply { margin-top: 12px; } [hidden] { display: none !important; }
