@@ -39,8 +39,8 @@ test('real inspection contract supplies immutable document-attributed observatio
   assert.equal(r.ok, true); assert.equal(r.text, 'fixture response'); assert.equal(r.observationSessionId, 1); assert.equal(reads(f).length, 1);
 });
 test('provider request mismatch fails instead of silently ignoring observation', async () => {
-  const f = setup([script('unexpected', { expectedRequest: { prompt: 'different', observation } })]); await join(f);
-  assert.equal((await f.fixture.run('actual')).reason, 'invalid_fixture_or_stream');
+  const f = setup([script('unexpected', { expectedRequest: { prompt: 'different', observation } })]);
+  await join(f); assert.equal((await f.fixture.run('actual')).reason, 'invalid_fixture_or_stream');
 });
 test('cannot repeat confirmation or silently re-invite', async () => {
   const f = setup(); await join(f); assert.equal((await f.fixture.confirm()).ok, false);
