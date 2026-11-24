@@ -101,10 +101,10 @@ export function createIntegratedFixture({ api, browserId, workerId, provider, no
     if (typeof prompt !== 'string' || !prompt.trim() || prompt.length > 8192) return deny('invalid_prompt');
     s.busy = true;
     try {
-      if (!await verify(s)) { drop(s); return deny('presence_revoked'); }
+      if (!await verify(s) || !live(s)) { drop(s); return deny('presence_revoked'); }
       const observation = s.observation;
       const result = await s.chat.run(prompt, observation);
-      if (!live(s) || !await verify(s)) { drop(s); return deny('presence_revoked'); }
+      if (!live(s) || !await verify(s) || !live(s)) { drop(s); return deny('presence_revoked'); }
       return result.ok ? Object.freeze({ ...result, observationSessionId: observation.sessionId }) : result;
     } catch { drop(s); return deny('browser_unavailable'); }
     finally { s.busy = false; }
