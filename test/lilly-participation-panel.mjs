@@ -43,3 +43,16 @@ test('adapter unknown and thrown confirmation remain terminal; no retry',async()
 test('explicit precondition failure does not claim success; pagehide disposes listeners',async()=>{
   const h=harness();await prepare(h);h.runtime.confirm=async()=>({ok:false,reason:'precondition_failed',effect:'not_applied'});await h.click('confirm');assert.match(h.nodes.status.textContent,/Not applied or denied: precondition_failed/);h.window.fire('pagehide');assert.equal(h.api.tabs.onActivated.count(),0);assert.equal(h.api.windows.onFocusChanged.count(),0);assert.equal(h.nodes.identify.disabled,true);
 });
+
+test('real adapter composition dispatches one document-bound mutation through UI',async()=>{
+  const {createFixtureParticipation,ACTION_URL,markReviewed}=await import('../src/lilly-presence/fixture-participation.mjs');
+  const h=harness(), writes=[];
+  const tab={id:2,windowId:1,active:true,status:'complete',url:ACTION_URL,incognito:false};
+  const runtime=createFixtureParticipation({browserId:'b',workerId:'w',now:()=>100,api:{tabs:{query:async()=>[tab]},scripting:{executeScript:async req=>{if(req.func===markReviewed){writes.push(req);return [{frameId:0,documentId:'doc-a',result:'applied'}];}return [{frameId:0,documentId:'doc-a',result:true}];}}}});
+  Object.assign(h.runtime,runtime);await h.click("identify");await h.click("prepare");for(let i=0;i<1000&&h.nodes.confirm.disabled;i++)await flush();assert.equal(h.nodes.confirm.disabled,false,h.nodes.status.textContent);assert.equal(writes.length,0);await h.click('confirm');assert.equal(writes.length,1);assert.deepEqual(writes[0].target,{tabId:2,documentIds:['doc-a']});assert.match(h.nodes.status.textContent,/Applied \(reported by fixture\)/);
+});
+test('allowlist build contains exactly eight regular files with restricted manifest and refuses overwrite',async()=>{
+  const {build,inventory}=await import('../tools/build-lilly-participation.mjs');
+  const {readdir,readFile,rm}=await import('node:fs/promises');const {join}=await import('node:path');
+  const out=await build();try{const files=(await readdir(out,{recursive:true,withFileTypes:true})).filter(x=>x.isFile()).map(x=>join(x.parentPath,x.name).slice(out.length+1)).sort();assert.deepEqual(files,[...inventory].sort());assert.equal(files.length,8);const manifest=JSON.parse(await readFile(join(out,'manifest.json'),'utf8'));assert.deepEqual(manifest.permissions,['sidePanel','activeTab','scripting']);assert.equal(manifest.incognito,'not_allowed');assert.equal(manifest.host_permissions,undefined);assert.match(manifest.content_security_policy.extension_pages,/connect-src 'none'/);assert.ok(files.includes(manifest.side_panel.default_path));assert.ok(files.includes(manifest.background.service_worker));await assert.rejects(build(out));}finally{await rm(out,{recursive:true,force:true});}
+});
