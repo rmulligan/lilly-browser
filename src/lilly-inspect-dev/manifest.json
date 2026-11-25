@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "LillyBrowser (Fixture Inspection)",
+  "version": "0.1.4",
+  "minimum_chrome_version": "116",
+  "description": "One-shot read-only inspection of a synthetic local fixture.",
+  "permissions": ["activeTab", "scripting"],
+  "action": { "default_title": "Lilly fixture inspection", "default_popup": "popup.html" },
+  "content_security_policy": { "extension_pages": "default-src 'none'; script-src 'self'; object-src 'none'; style-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none';" }
+}

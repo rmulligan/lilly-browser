@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Lilly — Integrated fixture</title><link rel="stylesheet" href="panel.css"></head>
+<body><main>
+<header><p class="eyebrow">DIGITAL PRESENCE · DEVELOPMENT</p><h1>Lilly</h1><p class="muted">Local fixture only · mock conversation</p></header>
+<section aria-labelledby="presence-label"><p class="eyebrow" id="presence-label">PRESENCE</p><p id="status" role="status">Available, not present.</p><p id="identity" class="provenance"></p>
+<div class="controls"><button id="identify">Identify fixture</button><button id="confirm" disabled>Confirm observation</button><button id="leave">Leave / clear</button></div></section>
+<section id="context" hidden aria-labelledby="context-label"><p class="eyebrow" id="context-label">SHARED CONTEXT</p><h2>Captured observation</h2><p id="observation" class="observed"></p><p id="source" class="provenance"></p><p class="muted">Historical snapshot · read-only · no automatic refresh</p></section>
+<section id="conversation" hidden aria-labelledby="conversation-label"><p class="eyebrow" id="conversation-label">CONVERSATION · MOCK ONLY</p><label for="prompt">Your message</label><textarea id="prompt" maxlength="8192" rows="3" disabled></textarea><button id="send" disabled>Send mock message</button><p id="reply" role="status" class="reply"></p></section>
+<footer>Inference: disconnected · Actions: unavailable · Memory: disconnected. Opening this panel is not an invitation.</footer>
+</main><script type="module" src="panel.mjs"></script></body></html>

@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "LillyBrowser (Development)",
+  "version": "0.1.0",
+  "description": "Isolated, inert development shell for invitation-based browser presence.",
+  "minimum_chrome_version": "116",
+  "permissions": [
+    "sidePanel"
+  ],
+  "action": {
+    "default_title": "Open LillyBrowser Development"
+  },
+  "side_panel": {
+    "default_path": "panel.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_security_policy": {
+    "extension_pages": "default-src 'none'; script-src 'self'; object-src 'none'; style-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none';"
+  }
+}
